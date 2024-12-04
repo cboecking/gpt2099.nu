@@ -3,7 +3,7 @@ def iff [ x or_else ] {
     if ($x | is-not-empty) { $x } else { $or_else }
 }
 
-def id-to-messages [id: string] {
+export def id-to-messages [id: string] {
     mut messages = []
     mut current_id = $id
 
@@ -29,7 +29,6 @@ def id-to-messages [id: string] {
 }
 
 
-
 def id-to-message [id: string] {
     let frame = .get $id
     let role = $frame | get meta | if ($in | is-not-empty) { $in } else { {} } | default "user" role | get role
@@ -41,43 +40,13 @@ def id-to-message [id: string] {
 }
 
 export def llm [message_id: string] {
-    if false {
-    let messages = (
-        .cat | where topic == "chat" | each {|x|
-
-            let role = $x | get meta | if ($in | is-not-empty) { $in } else { {} } | default "user" role | get role
-        {
-            role: $role
-            content: (.cas $x.hash)
-        }
-    })
-    }
-
-    # let message = id-to-message $message_id
-    # let messages = [$message]
-
     let messages = id-to-messages $message_id
-    return $messages
 
-
-    let data = if false {
- {
-        model: "gpt-4o"
-        stream: true
-        messages: ($messages | prepend
-          {
-            "role": "system",
-            "content": (open p1.txt)
-          })
-    } 
-    } else {
- {
+    let data = {
         model: "gpt-4o"
         stream: true
         messages: $messages
     } 
-
-    }
 
     (
         http post 
