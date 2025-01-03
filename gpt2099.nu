@@ -71,8 +71,14 @@ export def new [] {
 
 export def continue [ --id: string] {
   let content = or-else {|| input "prompt: "}
-  let thread = $id | or-else {|| .cat | where topic == "message" | last}
-  let frame = $content | .append message --meta { role: "user" continues: $thread.id }
+  let id = $id | or-else {|| .cat | where topic == "message" | last | get id}
+  let frame = $content | .append message --meta { role: "user" continues: $id }
   id-to-messages $frame.id | tee {print $in} | call-openai --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
   return
+}
+
+export def system [] {
+  let content = $in
+  let frame = .cat | where {|frame| ($frame.topic == "messages") and (($frame | get meta.role?) == "system")} | input list --fuzzy -d meta.description
+  $content | continue --id $frame.id
 }
