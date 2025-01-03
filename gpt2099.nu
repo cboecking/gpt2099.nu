@@ -1,5 +1,5 @@
-def iff [x or_else] {
-  if ($x | is-not-empty) {$x} else {$or_else}
+def or-else [or_else: closure] {
+  if ($in | is-not-empty) {$in} else {do $or_else}
 }
 
 export def id-to-messages [id: string] {
@@ -63,14 +63,16 @@ def call-openai [ --streamer: closure] {
 }
 
 export def new [] {
-  let content = $in | if ($in | is-not-empty) {$in} else {input "prompt: "}
-
-  let frame = {
-    role: "user"
-    content: $content
-  } | to json -r | .append messages
-
+  let content = or-else {|| input "prompt: "}
+  let frame = $content | .append message --meta { role: "user" }
   id-to-messages $frame.id | call-openai --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
+  return
+}
 
+export def continue [ --id: string] {
+  let content = or-else {|| input "prompt: "}
+  let thread = $id | or-else {|| .cat | where topic == "message" | last}
+  let frame = $content | .append message --meta { role: "user" continues: $thread.id }
+  id-to-messages $frame.id | tee {print $in} | call-openai --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
   return
 }
