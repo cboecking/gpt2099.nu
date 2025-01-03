@@ -36,38 +36,13 @@ def id-to-message [id: string] {
   }
 }
 
-export def llm [message_id: string] {
-  let messages = id-to-messages $message_id
-
+# todo: help fix tree-sitter:
+# ]: list<record<role: string content: string>> -> string {
+def call-openai [ --streamer: closure] {
   let data = {
     model: "gpt-4o"
     stream: true
-    messages: $messages
-  }
-
-  (
-    http post
-    --content-type application/json
-    -H { "Authorization": $"Bearer ($env.OPENAI_API_KEY)" }
-    https://api.openai.com/v1/chat/completions
-    $data
-  ) | lines | each {|line|
-    if $line == "data: [DONE]" { return }
-    if ($line | is-empty) { return }
-    $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content}
-  } | tee {str join | .append message --meta { role: "assistant" continues: $message_id }} | each {print -n $in}
-}
-
-# todo: help fix tree-sitter for:
-# export def call-openai [messages: list<record<role: stringcontent: string>>] {
-export def call-openai [
-  messages
-  --streamer: closure
-] {
-  let data = {
-    model: "gpt-4o"
-    stream: true
-    messages: $messages
+    messages: $in
   }
 
   (
@@ -85,4 +60,17 @@ export def call-openai [
       each {if ($streamer | is-not-empty) {do $streamer}}
     }
   } | str join
+}
+
+export def new [] {
+  let content = $in | if ($in | is-not-empty) {$in} else {input "prompt: "}
+
+  let frame = {
+    role: "user"
+    content: $content
+  } | to json -r | .append messages
+
+  id-to-messages $frame.id | call-openai --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
+
+  return
 }
