@@ -57,3 +57,23 @@ export def llm [message_id: string] {
     $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content}
   } | tee {str join | .append message --meta { role: "assistant" continues: $message_id }} | each {print -n $in}
 }
+
+export def call-openai [messages: list<record<role: string content: string>>] {
+      let data = {
+    model: "gpt-4o"
+    stream: true
+    messages: $messages
+  }
+
+  (
+    http post
+    --content-type application/json
+    -H { "Authorization": $"Bearer ($env.OPENAI_API_KEY)" }
+    https://api.openai.com/v1/chat/completions
+    $data
+  ) | lines | each {|line|
+    if $line == "data: [DONE]" { return }
+    if ($line | is-empty) { return }
+    $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content}
+  }
+}
