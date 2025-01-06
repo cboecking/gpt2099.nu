@@ -2,7 +2,7 @@
 
 Nushell + cross-stream + llms
 
-```
+```mermaid
 flowchart TD
     A[Message ID 1: Start] -->|continues| B[Message ID 2]
     B -->|continues| C[Message ID 3]
