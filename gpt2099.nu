@@ -1,3 +1,10 @@
+def iff [
+  action: closure
+  --else: closure
+]: any -> any {
+  if ($in | is-not-empty) {do $action} else {do $else}
+}
+
 def or-else [or_else: closure] {
   if ($in | is-not-empty) {$in} else {do $or_else}
 }
@@ -62,15 +69,25 @@ def call-openai [ --streamer: closure] {
   } | str join
 }
 
+export def read-input [] {
+  iff {||
+    match ($in | describe -d | get type) {
+      "string" => $in
+      "list" => ($in | str join "\n\n----\n\n")
+      _ => ( error make { msg: "TBD" })
+    }
+  } --else {|| input "prompt: "}
+}
+
 export def new [] {
-  let content = or-else {|| input "prompt: "}
+  let content = read-input
   let frame = $content | .append message --meta { role: "user" }
   id-to-messages $frame.id | call-openai --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
   return
 }
 
-export def continue [ --id: string] {
-  let content = or-else {|| input "prompt: "}
+export def resume [ --id: string] {
+  let content = read-input
   let id = $id | or-else {|| .cat | where topic == "message" | last | get id}
   let frame = $content | .append message --meta { role: "user" continues: $id }
   id-to-messages $frame.id | tee {print $in} | call-openai --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
@@ -78,7 +95,11 @@ export def continue [ --id: string] {
 }
 
 export def system [] {
-  let content = $in
+  let content = read-input
   let frame = .cat | where {|frame| ($frame.topic == "messages") and (($frame | get meta.role?) == "system")} | input list --fuzzy -d meta.description
-  $content | continue --id $frame.id
+  $content | resume --id $frame.id
+}
+
+export def prep [...names: string] {
+  $names | each {|name| $"($name):\n\n``````\n(open $name | str trim)\n``````\n"} | str join "\n"
 }
