@@ -2,6 +2,8 @@
 
 Nushell + cross-stream + llms
 
+https://github.com/user-attachments/assets/4c74e5e6-c413-402b-8283-45a3a149bce5
+
 ```mermaid
 flowchart TD
     A[Message ID 1: Start] -->|continues| B[Message ID 2]
