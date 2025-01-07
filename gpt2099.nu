@@ -2,7 +2,9 @@ def iff [
   action: closure
   --else: closure
 ]: any -> any {
-  if ($in | is-not-empty) {do $action} else {do $else}
+  if ($in | is-not-empty) {do $action} else {
+    if ($else | is-not-empty) {do $else}
+  }
 }
 
 def or-else [or_else: closure] {
@@ -45,7 +47,7 @@ def id-to-message [id: string] {
 
 # todo: help fix tree-sitter:
 # ]: list<record<role: string content: string>> -> string {
-def call-openai [ --streamer: closure] {
+def call-openai [] {
   let data = {
     model: "gpt-4o"
     stream: true
@@ -63,9 +65,39 @@ def call-openai [ --streamer: closure] {
     if $line == "data: [DONE]" { return }
     if ($line | is-empty) { return }
 
-    $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content} | tee {
-      each {if ($streamer | is-not-empty) {do $streamer}}
+    $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content}
+  }
+}
+
+export def call-anthropic [] {
+  let data = {
+    model: "claude-3-5-sonnet-20241022"
+    max_tokens: 1024
+    stream: true
+    messages: $in
+  }
+
+  (
+    http post
+    --content-type application/json
+    -H {
+      "x-api-key": $env.ANTHROPIC_API_KEY
+      "anthropic-version": "2023-06-01"
     }
+    https://api.anthropic.com/v1/messages
+    $data
+  ) | lines | each {|line|
+    $line | split row -n 2 "data: " | get 1?
+  } | each {|x|
+    $x | from json
+  } | where type == "content_block_delta" | each {|x|
+    $x | get delta.text
+  }
+}
+
+export def call [ --streamer: closure] {
+  call-openai | tee {
+    each {if ($streamer | is-not-empty) {do $streamer}}
   } | str join
 }
 
@@ -82,7 +114,7 @@ export def read-input [] {
 export def new [] {
   let content = read-input
   let frame = $content | .append message --meta { role: "user" }
-  id-to-messages $frame.id | call-openai --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
+  id-to-messages $frame.id | call --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
   return
 }
 
@@ -90,7 +122,7 @@ export def resume [ --id: string] {
   let content = read-input
   let id = $id | or-else {|| .cat | where topic == "message" | last | get id}
   let frame = $content | .append message --meta { role: "user" continues: $id }
-  id-to-messages $frame.id | tee {print $in} | call-openai --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
+  id-to-messages $frame.id | tee {print $in} | call --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
   return
 }
 
