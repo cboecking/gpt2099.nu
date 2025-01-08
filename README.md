@@ -13,7 +13,13 @@
 - `use gpt2099.nu *`
 - start a cross-stream store in a dedicated window: `xs serve ./store`
 
-- In the same directory, select a provider: `select-provider`
+- In the same directory, set a provider, e.g.
+
+```
+$env.GPT2099_PROVIDER = {name: "openai" model: "gpt-4o"}
+```
+
+- There's also a convenience to help pick from the available providers: `select-provider`
 
 https://github.com/user-attachments/assets/dd99e920-480c-4d47-ba52-6c62217d1194
 
