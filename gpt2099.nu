@@ -25,9 +25,11 @@ export-env {
         )
       }
 
-      call: {||
+      # todo: help fix tree-sitter:
+      # ]: list<record<role: string content: string>> -> string {
+      call: {|model: string|
         let data = {
-          model: "gpt-4o"
+          model: $model
           stream: true
           messages: $in
         }
@@ -65,9 +67,9 @@ export-env {
         )
       }
 
-      call: {||
+      call: {|model: string|
         let data = {
-          model: "claude-3-5-sonnet-20241022"
+          model: $model
           max_tokens: 1024
           stream: true
           messages: $in
@@ -103,9 +105,9 @@ export-env {
         )
       }
 
-      call: {||
+      call: {|model: string|
         let data = {
-          model: "llama-3.3-70b"
+          model: $model
           stream: true
           messages: $in
         }
@@ -157,12 +159,12 @@ def id-to-message [id: string] {
   }
 }
 
-# todo: help fix tree-sitter:
-# ]: list<record<role: string content: string>> -> string {
 export def --env call [ --streamer: closure] {
   let content = $in
   ensure-provider
-  $content | do $env.GPT2099_PROVIDER.call | tee {
+  let config = $env.GPT2099_PROVIDER
+  let provider = $env.GPT2099_PROVIDERS | get $config.name
+  $content | do $provider.call $config.model | tee {
     each {if ($streamer | is-not-empty) {do $streamer}}
   } | str join
 }
@@ -204,9 +206,13 @@ export def prep [...names: string] {
 
 export def --env select-provider [] {
   print "Select a provider:"
-  let choice = $env.GPT2099_PROVIDERS | columns | input list
-  print $"Selected provider: ($choice)"
-  $env.GPT2099_PROVIDER = $env.GPT2099_PROVIDERS | get $choice
+  let name = $env.GPT2099_PROVIDERS | columns | input list
+  print $"Selected provider: ($name)"
+  let provider = $env.GPT2099_PROVIDERS | get $name
+  print -n "Select model:"
+  let model = do $provider.models | get id | input list --fuzzy
+  print $"Selected model: ($model)"
+  $env.GPT2099_PROVIDER = { name: $name model: $model }
 }
 
 export def --env ensure-provider [] {
