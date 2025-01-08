@@ -14,6 +14,17 @@ def or-else [or_else: closure] {
 export-env {
   $env.GPT2099_PROVIDERS = {
     openai: {
+      models: {||
+        (
+          http get https://api.openai.com/v1/models
+          -H { Authorization: $"Bearer ($env.OPENAI_API_KEY)" }
+          | get data
+          | select id created
+          | update created {$in * 1_000_000_000 | into datetime}
+          | sort-by -r created
+        )
+      }
+
       call: {||
         let data = {
           model: "gpt-4o"
@@ -24,7 +35,7 @@ export-env {
         (
           http post
           --content-type application/json
-          -H { "Authorization": $"Bearer ($env.OPENAI_API_KEY)" }
+          -H { Authorization: $"Bearer ($env.OPENAI_API_KEY)" }
           https://api.openai.com/v1/chat/completions
           $data
           | lines
