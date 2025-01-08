@@ -162,11 +162,15 @@ def id-to-message [id: string] {
 export def --env call [ --streamer: closure] {
   let content = $in
   ensure-provider
+
   let config = $env.GPT2099_PROVIDER
-  let provider = $env.GPT2099_PROVIDERS | get $config.name
-  $content | do $provider.call $config.model | tee {
-    each {if ($streamer | is-not-empty) {do $streamer}}
-  } | str join
+  let caller = $env.GPT2099_PROVIDERS | get $config.name | get call
+
+  (
+  $content | do $caller $config.model
+  | tee { each {if ($streamer | is-not-empty) {do $streamer}} }
+  | str join
+  )
 }
 
 export def read-input [] {
@@ -179,10 +183,19 @@ export def read-input [] {
   } --else {|| input "prompt: "}
 }
 
+def --env run-thread [id: string] {
+  let res = id-to-messages $id | tee {print "Context:"; print $in} | call --streamer {|| print -n $in}
+  $res | .append message --meta {
+    provider: $env.GPT2099_PROVIDER
+    role: "assistant"
+    continues: $id
+  }
+}
+
 export def --env new [] {
   let content = read-input
   let frame = $content | .append message --meta { role: "user" }
-  id-to-messages $frame.id | call --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
+  run-thread $frame.id
   return
 }
 
@@ -190,7 +203,7 @@ export def --env resume [ --id: string] {
   let content = read-input
   let id = $id | or-else {|| .cat | where topic == "message" | last | get id}
   let frame = $content | .append message --meta { role: "user" continues: $id }
-  id-to-messages $frame.id | tee {print $in} | call --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
+  run-thread $frame.id
   return
 }
 
