@@ -15,10 +15,16 @@
 
 - In the same directory, select a provider: `select-provider`
 
+https://github.com/user-attachments/assets/dd99e920-480c-4d47-ba52-6c62217d1194
+
 - Start a chat thread: `"hello" | new`
 - Continue the thread `resume`
 
+## Original intro
+
 https://github.com/user-attachments/assets/4c74e5e6-c413-402b-8283-45a3a149bce5
+
+## Threaded conversations
 
 ```mermaid
 flowchart TD
