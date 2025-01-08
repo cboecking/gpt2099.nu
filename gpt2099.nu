@@ -103,8 +103,10 @@ def id-to-message [id: string] {
 
 # todo: help fix tree-sitter:
 # ]: list<record<role: string content: string>> -> string {
-export def call [ --streamer: closure] {
-  do $env.GPT2099_PROVIDER.call | tee {
+export def --env call [ --streamer: closure] {
+  let content = $in
+  ensure-provider
+  $content | do $env.GPT2099_PROVIDER.call | tee {
     each {if ($streamer | is-not-empty) {do $streamer}}
   } | str join
 }
@@ -119,14 +121,14 @@ export def read-input [] {
   } --else {|| input "prompt: "}
 }
 
-export def new [] {
+export def --env new [] {
   let content = read-input
   let frame = $content | .append message --meta { role: "user" }
   id-to-messages $frame.id | call --streamer {|| print -n $in} | .append message --meta { role: "assistant" continues: $frame.id }
   return
 }
 
-export def resume [ --id: string] {
+export def --env resume [ --id: string] {
   let content = read-input
   let id = $id | or-else {|| .cat | where topic == "message" | last | get id}
   let frame = $content | .append message --meta { role: "user" continues: $id }
@@ -134,7 +136,7 @@ export def resume [ --id: string] {
   return
 }
 
-export def system [] {
+export def --env system [] {
   let content = read-input
   let frame = .cat | where {|frame| ($frame.topic == "messages") and (($frame | get meta.role?) == "system")} | input list --fuzzy -d meta.description
   $content | resume --id $frame.id
@@ -142,4 +144,15 @@ export def system [] {
 
 export def prep [...names: string] {
   $names | each {|name| $"($name):\n\n``````\n(open $name | str trim)\n``````\n"} | str join "\n"
+}
+
+def --env select-provider [] {
+  print "Select a provider:"
+  let choice = $env.GPT2099_PROVIDERS | columns | input list
+  print $"Selected provider: ($choice)"
+  $env.GPT2099_PROVIDER = $env.GPT2099_PROVIDERS | get $choice
+}
+
+export def --env ensure-provider [] {
+    if not ("GPT2099_PROVIDER" in $env) { select-provider }
 }
