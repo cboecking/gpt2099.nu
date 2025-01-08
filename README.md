@@ -1,6 +1,6 @@
 ## gpt2099
 
-Nushell + cross-stream + llms
+[Nushell](https://www.nushell.sh) + [cross-stream](https://github.com/cablehead/xs) + llms
 
 https://github.com/user-attachments/assets/4c74e5e6-c413-402b-8283-45a3a149bce5
 
