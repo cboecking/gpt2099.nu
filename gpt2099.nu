@@ -27,17 +27,33 @@ export-env {
           -H { "Authorization": $"Bearer ($env.OPENAI_API_KEY)" }
           https://api.openai.com/v1/chat/completions
           $data
-        ) | lines | each {|line|
-
-          if $line == "data: [DONE]" { return }
-          if ($line | is-empty) { return }
-
-          $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content}
-        }
+          | lines
+          | each {|line|
+            if $line == "data: [DONE]" { return }
+            if ($line | is-empty) { return }
+            $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content}
+          }
+        )
       }
     }
 
     anthropic : {
+      models: {||
+        (
+          http get
+          -H {
+            "x-api-key": $env.ANTHROPIC_API_KEY
+            "anthropic-version": "2023-06-01"
+          }
+          https://api.anthropic.com/v1/models
+          | get data
+          | select id created_at
+          | rename -c { created_at: "created" }
+          | update created {into datetime}
+          | sort-by -r created
+        )
+      }
+
       call: {||
         let data = {
           model: "claude-3-5-sonnet-20241022"
@@ -55,13 +71,42 @@ export-env {
           }
           https://api.anthropic.com/v1/messages
           $data
-        ) | lines | each {|line|
-          $line | split row -n 2 "data: " | get 1?
-        } | each {|x|
-          $x | from json
-        } | where type == "content_block_delta" | each {|x|
-          $x | get delta.text
+          | lines
+          | each {|line| $line | split row -n 2 "data: " | get 1?}
+          | each {|x| $x | from json}
+          | where type == "content_block_delta"
+          | each {|x| $x | get delta.text}
+        )
+      }
+    }
+
+    cerebras : {
+      models: {||
+        (
+          http get https://api.cerebras.ai/v1/models
+          -H { Authorization: $"Bearer ($env.CEREBRAS_API_KEY)" }
+          | get data
+          | select id created
+          | update created {$in * 1_000_000_000 | into datetime}
+          | sort-by -r created
+        )
+      }
+
+      call: {||
+        let data = {
+          model: "llama-3.3-70b"
+          stream: true
+          messages: $in
         }
+
+        (
+          http post
+          --content-type application/json
+          -H { Authorization: $"Bearer ($env.CEREBRAS_API_KEY)" }
+          https://api.cerebras.ai/v1/chat/completions
+          $data
+          | lines | each {|line| $line | split row -n 2 "data: " | get 1?} | | each {|x| $x | from json | get choices.0.delta.content?}
+        )
       }
     }
   }
@@ -146,7 +191,7 @@ export def prep [...names: string] {
   $names | each {|name| $"($name):\n\n``````\n(open $name | str trim)\n``````\n"} | str join "\n"
 }
 
-def --env select-provider [] {
+export def --env select-provider [] {
   print "Select a provider:"
   let choice = $env.GPT2099_PROVIDERS | columns | input list
   print $"Selected provider: ($choice)"
@@ -154,5 +199,5 @@ def --env select-provider [] {
 }
 
 export def --env ensure-provider [] {
-    if not ("GPT2099_PROVIDER" in $env) { select-provider }
+  if not ("GPT2099_PROVIDER" in $env) {select-provider}
 }
