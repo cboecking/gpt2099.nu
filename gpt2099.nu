@@ -217,11 +217,23 @@ export def prep [...names: string] {
   $names | each {|name| $"($name):\n\n``````\n(open $name | str trim)\n``````\n"} | str join "\n"
 }
 
+export def --env ensure-api-key [name: string] {
+  let key_name = $"($name | str upcase)_API_KEY"
+  if not ($key_name in $env) {
+    let key = input -s $"\nRequired API key: $env.($key_name) = \"...\"\n\nIf you like, I can set it for you. Paste key: "
+    set-env $key_name $key
+    print "key set 👍\n"
+  }
+}
+
 export def --env select-provider [] {
   print "Select a provider:"
   let name = $env.GPT2099_PROVIDERS | columns | input list
   print $"Selected provider: ($name)"
+
   let provider = $env.GPT2099_PROVIDERS | get $name
+  ensure-api-key $name
+
   print -n "Select model:"
   let model = do $provider.models | get id | input list --fuzzy
   print $"Selected model: ($model)"
@@ -230,4 +242,5 @@ export def --env select-provider [] {
 
 export def --env ensure-provider [] {
   if not ("GPT2099_PROVIDER" in $env) {select-provider}
+  ensure-api-key $env.GPT2099_PROVIDER.name
 }
