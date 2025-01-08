@@ -1,4 +1,4 @@
-## gpt2099
+## gpt2099 [![Discord](https://img.shields.io/discord/1182364431435436042?logo=discord)](https://discord.com/invite/YNbScHBHrh)
 
 [Nushell](https://www.nushell.sh) + [cross-stream](https://github.com/cablehead/xs) + llms
 
