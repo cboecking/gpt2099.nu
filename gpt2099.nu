@@ -11,6 +11,62 @@ def or-else [or_else: closure] {
   if ($in | is-not-empty) {$in} else {do $or_else}
 }
 
+export-env {
+  $env.GPT2099_PROVIDERS = {
+    openai: {
+      call: {||
+        let data = {
+          model: "gpt-4o"
+          stream: true
+          messages: $in
+        }
+
+        (
+          http post
+          --content-type application/json
+          -H { "Authorization": $"Bearer ($env.OPENAI_API_KEY)" }
+          https://api.openai.com/v1/chat/completions
+          $data
+        ) | lines | each {|line|
+
+          if $line == "data: [DONE]" { return }
+          if ($line | is-empty) { return }
+
+          $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content}
+        }
+      }
+    }
+
+    anthropic : {
+      call: {||
+        let data = {
+          model: "claude-3-5-sonnet-20241022"
+          max_tokens: 1024
+          stream: true
+          messages: $in
+        }
+
+        (
+          http post
+          --content-type application/json
+          -H {
+            "x-api-key": $env.ANTHROPIC_API_KEY
+            "anthropic-version": "2023-06-01"
+          }
+          https://api.anthropic.com/v1/messages
+          $data
+        ) | lines | each {|line|
+          $line | split row -n 2 "data: " | get 1?
+        } | each {|x|
+          $x | from json
+        } | where type == "content_block_delta" | each {|x|
+          $x | get delta.text
+        }
+      }
+    }
+  }
+}
+
 export def id-to-messages [id: string] {
   mut messages = []
   mut current_id = $id
@@ -47,56 +103,8 @@ def id-to-message [id: string] {
 
 # todo: help fix tree-sitter:
 # ]: list<record<role: string content: string>> -> string {
-def call-openai [] {
-  let data = {
-    model: "gpt-4o"
-    stream: true
-    messages: $in
-  }
-
-  (
-    http post
-    --content-type application/json
-    -H { "Authorization": $"Bearer ($env.OPENAI_API_KEY)" }
-    https://api.openai.com/v1/chat/completions
-    $data
-  ) | lines | each {|line|
-
-    if $line == "data: [DONE]" { return }
-    if ($line | is-empty) { return }
-
-    $line | str substring 6.. | from json | get choices.0.delta | if ($in | is-not-empty) {$in.content}
-  }
-}
-
-export def call-anthropic [] {
-  let data = {
-    model: "claude-3-5-sonnet-20241022"
-    max_tokens: 1024
-    stream: true
-    messages: $in
-  }
-
-  (
-    http post
-    --content-type application/json
-    -H {
-      "x-api-key": $env.ANTHROPIC_API_KEY
-      "anthropic-version": "2023-06-01"
-    }
-    https://api.anthropic.com/v1/messages
-    $data
-  ) | lines | each {|line|
-    $line | split row -n 2 "data: " | get 1?
-  } | each {|x|
-    $x | from json
-  } | where type == "content_block_delta" | each {|x|
-    $x | get delta.text
-  }
-}
-
 export def call [ --streamer: closure] {
-  call-openai | tee {
+  do $env.GPT2099_PROVIDER.call | tee {
     each {if ($streamer | is-not-empty) {do $streamer}}
   } | str join
 }
