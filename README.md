@@ -4,6 +4,7 @@ GPT2099 helps you interact with LLM using Nushell. It has the following goals:
 
 - Help users interact with LLMs in a natural and intuitive Nushell way ([Nushell](https://www.nushell.sh) way of thinking)
 - Highlight the value of [xs (cross-stream)](https://github.com/cablehead/xs) as a local event source database
+- Demonstrate how you can create CLI tools that are both interactive and composable using Nushell
 
 If we are successful, we will usher in a new wave of AI innovation in Nushell. We will show what is possible when you create a collection of standalone, primitive AI tools and give users the ability to compose compound AI pipelines.
 
@@ -37,7 +38,7 @@ cd ~
 xs serve ./store
 ```
 
-## Getting started
+## Getting Started
 
 The purpose of this section is to make your first call to an LLM. Launch Nushell `nu` and paste the following commands:
 
