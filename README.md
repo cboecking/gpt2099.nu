@@ -1,12 +1,12 @@
 ## gpt2099 [![Discord](https://img.shields.io/discord/1182364431435436042?logo=discord)](https://discord.com/invite/YNbScHBHrh)
 
-gpt2099 helps you interact with LLM using Nushell. It has the following goals:
+gpt2099 helps you interact with LLMs using Nushell. It has the following goals:
 
-- Help users interact with LLMs in a natural and intuitive Nushell way ([Nushell](https://www.nushell.sh) way of thinking)
+- Help users interact with LLMs in a natural and intuitive [Nushell](https://www.nushell.sh) way (Nushell way of thinking)
 - Highlight the value of [xs (cross-stream)](https://github.com/cablehead/xs) as a local event source database
 - Demonstrate how you can create CLI tools that are both interactive and composable using Nushell
 
-If we are successful, we will usher in a new wave of AI innovation in Nushell. We will show what is possible when you create a collection of standalone, primitive AI tools and give users the ability to compose compound AI pipelines.
+If we are successful, we will usher in a new wave of LLM innovation in Nushell. We will show what is possible when you create a collection of standalone, primitive LLM tools and give users the ability to compose compound LLM pipelines.
 
 Here is an example of what we are attempting to accomplish. This page will help you turn the following pseudo-code pipeline into a functioning example.
 
