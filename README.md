@@ -24,7 +24,7 @@ The purpose of this section is to ensure you have everything installed to succes
   - This repository - needed to use [gpt2099.nu](https://github.com/cablehead/gpt2099.nu/blob/main/gpt2099.nu)
   - [xs (cross-stream)](https://github.com/cablehead/xs/) - needed to use [xs.nu](https://github.com/cablehead/xs/blob/main/xs.nu)
 
-## xs (cross stream)
+## xs (cross stream) Summary
 
 Before we get started, you should now a little about xs (cross stream), a local-first event source database.
 
@@ -147,18 +147,20 @@ The purpose of this section is to help you better understand how to use gpt2099.
 
 Here are the modes:
 
-- Interactive (tty)
 - Pipeline/script (no tty)
+- Interactive (tty)
 
-### Interactive
+### Pipeline/Script
 
-One of the goals of the project is to demonstrate how you can create CLI tools that are interactive using Nushell. Rather than simply have a command fail, we would like to prompt the user for more information if and when possible.
-
-In previous examples, we used the following non-interactive command:
+In previous examples, we demonstrated the following non-interactive command. The below example could be part of a bigger pipeline or script.
 
 ```nu
 "lets talk about cats" | gpt2099 new
 ```
+
+### Interactive
+
+One of the goals of the project is to demonstrate how you can create CLI tools that are interactive using Nushell. Rather than simply have a command fail, we would like to prompt the user for more information if and when possible.
 
 Example interaction where the system prompts you if you did not supply one:
 
@@ -174,13 +176,28 @@ https://github.com/user-attachments/assets/dd99e920-480c-4d47-ba52-6c62217d1194
 
 ## xs (cross-stream) Details
 
+The purpose of the section is to help you use your local `xs` instance specifically in the context of gpt2099.
+
+To view a list of current conversations:
+
+```nu
+~> .cat
+```
+
+
+## Conversation Forking Use Case
+
+
+
+## Document Aggrigation Use Case
+
 
 
 ## FAQ
 
 - Why does the name include 2099? What else would you call the future?
 
-to be continued...
+To be continued...
 ----
 
 
