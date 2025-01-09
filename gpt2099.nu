@@ -11,7 +11,20 @@ def or-else [or_else: closure] {
   if ($in | is-not-empty) {$in} else {do $or_else}
 }
 
+def conditional-pipe [
+  condition: bool
+  action: closure
+] {
+  if $condition {do $action} else {$in}
+}
+
 export-env {
+  # Coerce the provider to a record if it's a string.
+  $env.GPT2099_PROVIDER = match ($env.GPT2099_PROVIDER? | describe -d | get type) {
+    "string" => ($env.GPT2099_PROVIDER | from json)
+    _ => ($env.GPT2099_PROVIDER?)
+  }
+
   $env.GPT2099_PROVIDERS = {
     openai: {
       models: {||
@@ -159,17 +172,17 @@ def id-to-message [id: string] {
   }
 }
 
-export def --env call [ --streamer: closure] {
+export def call [ --streamer: closure] {
   let content = $in
-  ensure-provider
 
   let config = $env.GPT2099_PROVIDER
   let caller = $env.GPT2099_PROVIDERS | get $config.name | get call
 
   (
-  $content | do $caller $config.model
-  | tee { each {if ($streamer | is-not-empty) {do $streamer}} }
-  | str join
+    $content
+    | do $caller $config.model
+    | conditional-pipe ($streamer | is-not-empty) {|| tee {each {do $streamer}}}
+    | str join
   )
 }
 
@@ -183,13 +196,29 @@ export def read-input [] {
   } --else {|| input "prompt: "}
 }
 
+def is-tty [] {
+  (tty | complete).exit_code == 0
+}
+
 export def --env run-thread [id: string] {
-  let res = id-to-messages $id | tee {print "Context:"; print $in} | call --streamer {|| print -n $in}
+  let messages = id-to-messages $id
+
+  mut streamer = {|| return }
+  # Only enable interactivity if we're attached to a terminal.
+  if (is-tty) {
+    ensure-provider
+    $streamer = {|| print -n $in}
+    print "Context:"
+    print $messages
+  }
+
+  let res = $messages | call --streamer $streamer
   $res | .append message --meta {
     provider: $env.GPT2099_PROVIDER
     role: "assistant"
     continues: $id
   }
+  return
 }
 
 export def --env new [] {
