@@ -21,7 +21,7 @@ The purpose of this section is to ensure you have everything installed to succes
 - Install [xs (cross-stream)](https://cablehead.github.io/xs/getting-started/installation/) 
 - Git clone the following repositories locally:
   - This repository - needed to use [gpt2099.nu](https://github.com/cablehead/gpt2099.nu/blob/main/gpt2099.nu)
-  - [cross-stream] - needed to use [xs.nu](https://github.com/cablehead/xs/blob/main/xs.nu)
+  - [xs (cross-stream)](https://github.com/cablehead/xs/) - needed to use [xs.nu](https://github.com/cablehead/xs/blob/main/xs.nu)
 
 ## xs (cross stream)
 
@@ -48,9 +48,22 @@ use /home/<your-home>/code/gpt2099.nu/gpt2099.nu
 $env.GPT2099_PROVIDER = {name: openai, model: "gpt-4o"}
 $env.XS_ADDR = "/home/<your-home>/store" #same as above
 $env.OPENAI_API_KEY = "sk-proj-..."
+"lets talk about cats" | gpt2099 new
+"what is your favorite" | gpt2099 resume
 ```
 
+Where:
+
+- We assume cloned code exists in ~/code/
+- We load both the xs.nu and gpt2099.nu Nushell modules
+- We set environment variables needed to quickly connect to your LLM account
+- We pass in a new conversation prompt setting the context about 'cats'
+- We continue the conversation by asking about a 'favorite' without mentioning 'cats' to confirm we are in fact engaged in a contextual conversation
+
+to be continued...
 ----
+
+
 
 - There's also a convenience to help pick from the available providers: `select-provider`
 
