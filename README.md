@@ -29,7 +29,7 @@ The purpose of this section is to ensure you have everything installed to succes
 Before we get started, you should now a little about xs (cross stream), a local-first event source database.
 
 - What is it: `xs` helps you aggregate the many artifacts you collect when engaging one or more LLMs.
-- Why is it required: there is little you can do with an LLM without employing some sort of memory. `xs` helps you keep track of all the documents, prompts, RAG results, previews conversations, ... associated with generating value with LLM interactions.
+- Why is it required: there is little you can do with an LLM without employing some sort of memory. `xs` helps you keep track of all the documents, prompts, RAG results, previous conversations, ... associated with generating value with LLM interactions.
 
 **Action:** launch a local `xs` server. You can launch it anywhere. Just remember where you put it. You will need to reference it later.
 
