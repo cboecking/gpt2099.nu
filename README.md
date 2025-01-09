@@ -176,38 +176,40 @@ https://github.com/user-attachments/assets/dd99e920-480c-4d47-ba52-6c62217d1194
 
 ## xs (cross-stream) Details
 
-The purpose of the section is to help you use your local `xs` instance specifically in the context of gpt2099.
+The purpose of the section is to help you use your local `xs` instance specifically in the context of gpt2099. We will use these details in the below gpt2099 use cases.
 
-To view a list of current conversations:
+To view a list of current conversations/events, use the `xs` command `.cat`:
 
 ```nu
-~> .cat
+.cat
 ```
 
+To view the contents of any one conversation/event, use the `xs` command `.get` to get the hash and the `xs` command `.cas` to print the message from the hash:
+
+```nu
+.get <id> | .cas
+```
+
+To print all messages up to an event id, use the `gpt2099` command `id-to-messages`:
+
+```nu
+gpt2099 id-to-messages <id>
+```
 
 ## Conversation Forking Use Case
 
+The purpose of this section is to illustrate how easy it is to fork a conversation using `xs` and `gpt2099`. Here is an example:
 
+```nu
+"start a conversation about something" | gpt2099 new
+"continue the converation" | gpt2099 resume
+"let's pretent the last result from the llm was not good" | gpt2099 resume
+.cat # to see all messages
+gpt2099 id-to-messages <id> # to confirm we get the id of the last known desired conversation
+gpt2099 resume --id <id> # using any previous good id as the point to fork the conversation
+```
 
-## Document Aggrigation Use Case
-
-
-
-## FAQ
-
-- Why does the name include 2099? What else would you call the future?
-
-To be continued...
-----
-
-
-
-
-## Original intro
-
-https://github.com/user-attachments/assets/4c74e5e6-c413-402b-8283-45a3a149bce5
-
-## Threaded conversations
+Here is a visual to help demonstrate the use case:
 
 ```mermaid
 flowchart TD
@@ -222,3 +224,25 @@ flowchart TD
     G -->|continues| H[Message ID 8: Detail Thread 2]
     H -->|continues| I[Message ID 9: Detail Thread 2]
 ```
+
+We feel it is important to note that forking a conversation is not easy to reason about when you are writing an application. Creating a good user experience with proper flexibility is difficult and code intensive.
+
+However, this use case becomes almost trivial when you think about it in terms of tools (nushell + xs) as demonstrated above.
+
+## Document Aggregation Use Case
+
+
+
+## FAQ
+
+- Why does the name include 2099? What else would you call the future?
+- What is a message?
+- What is a conversation?
+- What is an event?
+
+## Original intro
+
+https://github.com/user-attachments/assets/4c74e5e6-c413-402b-8283-45a3a149bce5
+
+## Threaded conversations
+
