@@ -1,6 +1,6 @@
 ## gpt2099 [![Discord](https://img.shields.io/discord/1182364431435436042?logo=discord)](https://discord.com/invite/YNbScHBHrh)
 
-GPT2099 helps you interact with LLM using Nushell. It has the following goals:
+gpt2099 helps you interact with LLM using Nushell. It has the following goals:
 
 - Help users interact with LLMs in a natural and intuitive Nushell way ([Nushell](https://www.nushell.sh) way of thinking)
 - Highlight the value of [xs (cross-stream)](https://github.com/cablehead/xs) as a local event source database
@@ -61,17 +61,130 @@ Where:
 - We pass in a new conversation prompt setting the context about 'cats'
 - We continue the conversation by asking about a 'favorite' without mentioning 'cats' to confirm we are in fact engaged in a contextual conversation
 
+## Quick Results
+
+The purpose of this section is to help you make LLM results available at your fingertips - no mouse needed!!
+
+First, add the above `use` and `$env` commands to your [Nushell config](https://www.nushell.sh/book/configuration.html#quickstart) so these values are set every time you launch Nushell.
+
+Second, determine your operating system's keystroke to open a terminal. On Linux, it is often `super+t`. 
+
+Now, you can access the wisdom of an LLM from anywhere on your computer with a simple keystroke and immediately asking any question you wish.
+
+Here is an example:
+
+```nu
+"anthropomorphize" | gpt2099 new
+To anthropomorphize is to attribute human characteristics, emotions, behaviors, or intentions to non-human entities, such as:
+
+1. Animals
+- "The dog felt guilty about chewing the shoe"
+- "The cat plotted revenge"
+
+2. Objects
+- "The car refused to start today"
+- "The computer is being stubborn"
+...
+```
+
+To make things even easier, create an alias in your [Nushell config](https://www.nushell.sh/book/configuration.html#quickstart):
+
+```nu
+alias llm = gpt2099 new
+alias llm. = gpt2099 resume
+```
+
+How, you can quick ask:
+
+```nu
+"chuck steak" | llm # original question
+"best cook method" | llm. # followup question
+```
+
+## Commands
+
+The purpose of this section is to help you learn how to use gpt2099. Rather than repeat what is already available in code, we are going to help you learn by using.
+
+To view all available commands, use Nushell's auto complete feature by typing in gpt2099 and pressing tab. Here is an example:
+
+```nu
+~> gpt2099 <tab>
+gpt2099 call
+gpt2099 ensure-api-key
+gpt2099 ensure-provider
+gpt2099 id-to-messages
+gpt2099 new
+gpt2099 prep
+gpt2099 read-input
+gpt2099 resume
+gpt2099 select-provider
+gpt2099 system
+```
+
+To learn about any one subcommand, call the -h option for help.
+
+```nu
+~> gpt2099 new -h
+Usage:
+  > new
+
+Flags:
+  -h, --help: Display the help message for this command
+
+Input/output types:
+  ╭───┬───────┬────────╮
+  │ # │ input │ output │
+  ├───┼───────┼────────┤
+  │ 0 │ any   │ any    │
+  ╰───┴───────┴────────╯
+```
+
+If at any time you feel the help is incomplete, either post to the [![Discord](https://img.shields.io/discord/1182364431435436042?logo=discord)](https://discord.com/invite/YNbScHBHrh) or create a pull request. We welcome all feedback.
+
+## Usage Modes
+
+The purpose of this section is to help you better understand how to use gpt2099. 
+
+Here are the modes:
+
+- Interactive (tty)
+- Pipeline/script (no tty)
+
+### Interactive
+
+One of the goals of the project is to demonstrate how you can create CLI tools that are interactive using Nushell. Rather than simply have a command fail, we would like to prompt the user for more information if and when possible.
+
+In previous examples, we used the following non-interactive command:
+
+```nu
+"lets talk about cats" | gpt2099 new
+```
+
+Example interaction where the system prompts you if you did not supply one:
+
+```nu
+~> gpt2099 new
+prompt: lets talk about cats
+Absolutely, I'd love to talk about cats! Cats are fascinating creatures.
+```
+
+Example interaction where the system prompts you for an LLM API key if not already set as part of the `select-provider` subcommand:
+
+https://github.com/user-attachments/assets/dd99e920-480c-4d47-ba52-6c62217d1194
+
+## xs (cross-stream) Details
+
+
+
+## FAQ
+
+- Why does the name include 2099? What else would you call the future?
+
 to be continued...
 ----
 
 
 
-- There's also a convenience to help pick from the available providers: `select-provider`
-
-https://github.com/user-attachments/assets/dd99e920-480c-4d47-ba52-6c62217d1194
-
-- Start a chat thread: `"hello" | new`
-- Continue the thread `resume`
 
 ## Original intro
 
