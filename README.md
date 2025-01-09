@@ -54,7 +54,7 @@ $env.OPENAI_API_KEY = "sk-proj-..."
 
 Where:
 
-- We assume cloned code exists in ~/code/
+- We assume you cloned the above repositories into ~/code/
 - We load both the xs.nu and gpt2099.nu Nushell modules
 - We set environment variables needed to quickly connect to your LLM account
 - We pass in a new conversation prompt setting the context about 'cats'
