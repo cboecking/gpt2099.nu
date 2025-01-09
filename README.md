@@ -7,7 +7,7 @@ GPT2099 helps you interact with LLM using Nushell. It has the following goals:
 
 If we are successful, we will usher in a new wave of AI innovation in Nushell. We will show what is possible when you create a collection of standalone, primitive AI tools and give users the ability to compose compound AI pipelines.
 
-Here is an example of what we are attempting to accomplish. This page will help you turn the following pseudo-code into a functioning example.
+Here is an example of what we are attempting to accomplish. This page will help you turn the following pseudo-code pipeline into a functioning example.
 
 ```nu
 collect documents to discuss | inject system prompt | inject RAG results | inject episodic memory | call llm | analyze results
