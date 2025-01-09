@@ -183,7 +183,7 @@ export def read-input [] {
   } --else {|| input "prompt: "}
 }
 
-def --env run-thread [id: string] {
+export def --env run-thread [id: string] {
   let res = id-to-messages $id | tee {print "Context:"; print $in} | call --streamer {|| print -n $in}
   $res | .append message --meta {
     provider: $env.GPT2099_PROVIDER
