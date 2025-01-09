@@ -246,5 +246,3 @@ The purpose of this section is to illustrate how you can aggregate documents and
 
 https://github.com/user-attachments/assets/4c74e5e6-c413-402b-8283-45a3a149bce5
 
-## Threaded conversations
-
