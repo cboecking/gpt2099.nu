@@ -231,7 +231,9 @@ However, this use case becomes almost trivial when you think about it in terms o
 
 ## Document Aggregation Use Case
 
+The purpose of this section is to illustrate how you can aggregate documents and artifacts for LLM analysis.
 
+![agg-doc-use-case](https://github.com/user-attachments/assets/1d63e8c0-122c-4a8e-924c-3c25e2387053)
 
 ## FAQ
 
