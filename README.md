@@ -1,23 +1,56 @@
 ## gpt2099 [![Discord](https://img.shields.io/discord/1182364431435436042?logo=discord)](https://discord.com/invite/YNbScHBHrh)
 
-[Nushell](https://www.nushell.sh) + [cross-stream](https://github.com/cablehead/xs) + llms
+GPT2099 helps you interact with LLM using Nushell. It has the following goals:
 
-## Requirements
+- Help users interact with LLMs in a natural and intuitive Nushell way ([Nushell](https://www.nushell.sh) way of thinking)
+- Highlight the value of [xs (cross-stream)](https://github.com/cablehead/xs) as a local event source database
 
-- [Nushell](https://www.nushell.sh)
-- Install [cross-stream](https://cablehead.github.io/xs/getting-started/installation/) and get familar with the [basics](https://cablehead.github.io/xs/getting-started/first-stream/)
+If we are successful, we will usher in a new wave of AI innovation in Nushell. We will show what is possible when you create a collection of standalone, primitive AI tools and give users the ability to compose compound AI pipelines.
+
+Here is an example of what we are attempting to accomplish. This page will help you turn the following pseudo-code into a functioning example.
+
+```nu
+collect documents to discuss | inject system prompt | inject RAG results | inject episodic memory | call llm | analyze results
+```
+
+## Prerequisites
+
+The purpose of this section is to ensure you have everything installed to successfully engage LLMs from Nushell.
+
+- Install [Nushell](https://www.nushell.sh)
+- Install [xs (cross-stream)](https://cablehead.github.io/xs/getting-started/installation/) 
+- Git clone the following repositories locally:
+  - This repository - needed to use [gpt2099.nu](https://github.com/cablehead/gpt2099.nu/blob/main/gpt2099.nu)
+  - [cross-stream] - needed to use [xs.nu](https://github.com/cablehead/xs/blob/main/xs.nu)
+
+## xs (cross stream)
+
+Before we get started, you should now a little about xs (cross stream), a local-first event source database.
+
+- What is it: `xs` helps you aggregate the many artifacts you collect when engaging one or more LLMs.
+- Why is it required: there is little you can do with an LLM without employing some sort of memory. `xs` helps you keep track of all the documents, prompts, RAG results, previews conversations, ... associated with generating value with LLM interactions.
+
+**Action:** launch a local `xs` server. You can launch it anywhere. Just remember where you put it. You will need to reference it later.
+
+```bash
+cd ~
+xs serve ./store
+```
 
 ## Getting started
 
-- Clone this repository
-- `use gpt2099.nu *`
-- start a cross-stream store in a dedicated window: `xs serve ./store`
+The purpose of this section is to make your first call to an LLM. Launch Nushell `nu` and paste the following commands:
 
-- In the same directory, set a provider, e.g.
+```nu
+cd ~
+use /home/<your-home>/code/xs/xs.nu *
+use /home/<your-home>/code/gpt2099.nu/gpt2099.nu
+$env.GPT2099_PROVIDER = {name: openai, model: "gpt-4o"}
+$env.XS_ADDR = "/home/<your-home>/store" #same as above
+$env.OPENAI_API_KEY = "sk-proj-..."
+```
 
-```
-$env.GPT2099_PROVIDER = {name: "openai" model: "gpt-4o"}
-```
+----
 
 - There's also a convenience to help pick from the available providers: `select-provider`
 
