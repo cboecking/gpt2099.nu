@@ -190,12 +190,9 @@ export def read-input [] {
   } --else {|| input "prompt: "}
 }
 
-def is-tty [] {
-  (tty | complete).exit_code == 0
-}
 
 export def is-interactive [] {
-  (is-tty) and ($env.GPT2099_INTERACTIVE? | default true)
+  (is-terminal --stdin) and ($env.GPT2099_INTERACTIVE? | default true)
 }
 
 export def --env run-thread [id: string] {
