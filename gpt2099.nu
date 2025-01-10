@@ -200,12 +200,16 @@ def is-tty [] {
   (tty | complete).exit_code == 0
 }
 
+export def is-interactive [] {
+  (is-tty) and ($env.GPT2099_INTERACTIVE? | default true)
+}
+
 export def --env run-thread [id: string] {
   let messages = id-to-messages $id
 
   mut streamer = {|| return }
   # Only enable interactivity if we're attached to a terminal.
-  if (is-tty) {
+  if (is-interactive) {
     ensure-provider
     $streamer = {|| print -n $in}
     print "Context:"
