@@ -139,28 +139,22 @@ export-env {
 }
 
 export def id-to-messages [id: string] {
-  mut messages = []
-  mut current_id = $id
-
-  while $current_id != null {
-    let frame = .get $current_id
-    let role = $frame | get meta | if ($in | is-not-empty) {$in} else {{}} | default "user" role | get role
-    let content = (.cas $frame.hash)
-    let message = {
-      role: $role
-      content: $content
-    }
-    $messages = $messages | prepend $message
-
-    # Get the next ID from the continues field or stop if it doesn't exist
-    let next_id = $frame | get meta?.continues?
-    if $next_id == null {
-      break
-    }
-    $current_id = $next_id
+  let frame = .get $id
+  let role = $frame | get meta | if ($in | is-not-empty) {$in} else {{}} | default "user" role | get role
+  let content = (.cas $frame.hash)
+  let message = {
+    role: $role
+    content: $content
   }
 
-  return $messages
+  let next_id = $frame | get meta?.continues?
+
+  match ($next_id | describe -d | get type) {
+    "string" => (id-to-messages $next_id | append $message)
+    "list" => ($next_id | each {|id| id-to-messages $id} | flatten | append $message)
+    "nothing" => [$message]
+    _ => ( error make { msg: "TBD" })
+  }
 }
 
 def id-to-message [id: string] {
